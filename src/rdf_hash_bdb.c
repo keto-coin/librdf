@@ -145,6 +145,7 @@ librdf_hash_bdb_open(void* context, const char *identifier,
   char *file;
   int ret;
   u_int32_t flags = 0;
+  char* db_password = 0;
 
   LIBRDF_ASSERT_OBJECT_POINTER_RETURN_VALUE(identifier, cstring, 1);
   
@@ -180,8 +181,16 @@ librdf_hash_bdb_open(void* context, const char *identifier,
     LIBRDF_DEBUG2("Failed to set BDB duplicate flag - %d\n", ret);
     return 1;
   }
+
 #endif
-  
+  // db open
+  db_password=librdf_hash_get_del(options, "password");
+  if (db_password) {
+     printf("Set the password\n");
+     bdb->set_encrypt(bdb, db_password, DB_ENCRYPT_AES);
+     LIBRDF_FREE(char*, db_password);
+  }
+
   /* V3 prototype:
    * int DB->open(DB *db, const char *file, const char *database,
    *              DBTYPE type, u_int32_t flags, int mode);
